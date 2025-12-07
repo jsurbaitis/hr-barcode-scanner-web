@@ -119,9 +119,7 @@ body {
   margin-left: 4px;
 }
 
-.button-large,
-#copyAllButton,
-#scanAgainButton {
+.button-large {
   width: 100%;
   min-height: 50px;
   padding: 14px 20px;
@@ -144,27 +142,19 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.button:active,
-.button-large:active,
-#copyAllButton:active,
-#scanAgainButton:active {
+.button-large:active {
   opacity: 0.6;
 }
 
-.button:hover,
-.button-large:hover,
-#copyAllButton:hover,
-#scanAgainButton:hover {
+.button-large:hover {
   background-color: #0051d5;
 }
 
-#copyAllButton.copied,
-.button.copied {
+.button-large.copied {
   background-color: #34c759;
 }
 
-#copyAllButton.copied:active,
-.button.copied:active {
+.button-large.copied:active {
   opacity: 0.8;
 }
 
