@@ -91,12 +91,12 @@
         const label = labelForLine(index);
         if (label) {
           const line = rawDataLines[index];
-          visibleDataLines.push(line);
+          const displayValue = (label === 'Amount') ? formatAmount(line) : line;
+          visibleDataLines.push(displayValue);
           
           const fieldContainer = document.createElement('div');
           fieldContainer.className = 'result-field';
-          fieldContainer.dataset.rawValue = line;
-          fieldContainer.dataset.index = index;
+          fieldContainer.dataset.copyValue = displayValue;
           
           const labelElement = document.createElement('label');
           labelElement.className = 'result-label';
@@ -104,13 +104,13 @@
           
           const valueElement = document.createElement('div');
           valueElement.className = 'result-value';
-          valueElement.textContent = (label === 'Amount') ? formatAmount(line) : line;
+          valueElement.textContent = displayValue;
           
           fieldContainer.appendChild(labelElement);
           fieldContainer.appendChild(valueElement);
           
           fieldContainer.addEventListener('click', function() {
-            const rawValue = this.dataset.rawValue;
+            const rawValue = this.dataset.copyValue;
             navigator.clipboard.writeText(rawValue).then(() => {
               this.classList.add('copied');
               setTimeout(() => {
