@@ -61,7 +61,7 @@ body {
 }
 
 #result-fields {
-  margin: 24px 0;
+  margin: 20px 0;
   background-color: #ffffff;
   border-radius: 14px;
   overflow: hidden;
@@ -140,12 +140,11 @@ body {
   background-color: #0051d5;
 }
 
-
 #scanAgainButton {
   background-color: transparent;
   color: #007AFF;
   border: 1.5px solid #007AFF;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 #scanAgainButton:active {
@@ -157,13 +156,7 @@ body {
   background-color: rgba(0, 122, 255, 0.05);
 }
 
-#results-page > div:last-of-type {
-  margin-top: 24px;
-}
-
 .footer {
-  margin-top: 32px;
-  padding: 20px 16px;
   text-align: center;
 }
 
