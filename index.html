@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invoice Scanner</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="wrapper">
+    <!-- Scanning Page -->
+    <section class="container" id="scanning-page">
+      <h1 class="title">Scan Croatian Invoice Barcode</h1>
+      <p>Position the barcode in front of the camera</p>
+      <video id="video" width="300" height="200"></video>
+    </section>
+
+    <!-- Results Page -->
+    <section class="container" id="results-page">
+      <h1 class="title">Scan Result</h1>
+      <div id="result-fields"></div>
+      <div>
+        <button class="button-large" id="copyAllButton">Copy All</button>
+      </div>
+      <div>
+        <a class="button-large" id="scanAgainButton">Scan Another</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <section class="container">
+        <p>Always double check the data before using it.</p>
+      </section>
+    </footer>
+  </main>
+  
+  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
+  <script type="text/javascript">
+    let codeReader;
+    let selectedDeviceId;
+    let isScanning = false;
+
+    function showScanningPage() {
+      document.getElementById('scanning-page').style.display = 'block';
+      document.getElementById('results-page').style.display = 'none';
+    }
+
+    function labelForLine(index) {
+      switch (index) {
+        case 2: return 'Amount';
+        case 6: return 'Name';
+        case 7: return 'Address';
+        case 8: return 'Address';
+        case 9: return 'IBAN';
+        case 11: return 'Reference';
+        default: return null;
+      }
+    }
+
+    function formatAmount(amountString) {
+      // Amount is a 15-digit string padded with 0s on the left, representing euro cents
+      if (amountString.length !== 15) {
+        return amountString;
+      }
+      
+      const cents = parseInt(amountString, 10);
+      if (isNaN(cents)) {
+        return amountString;
+      }
+      
+      const euros = cents / 100.0;
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(euros);
+    }
+
+    function showResultsPage(resultText) {
+      document.getElementById('scanning-page').style.display = 'none';
+      document.getElementById('results-page').style.display = 'block';
+      
+      const rawDataLines = resultText.split('\n');
+      const resultFields = document.getElementById('result-fields');
+      resultFields.innerHTML = '';
+      
+      let visibleDataLines = [];
+      
+      for (let index = 0; index < rawDataLines.length; index++) {
+        const label = labelForLine(index);
+        if (label) {
+          const line = rawDataLines[index];
+          visibleDataLines.push(line);
+          
+          const fieldContainer = document.createElement('div');
+          fieldContainer.className = 'result-field';
+          fieldContainer.dataset.rawValue = line;
+          fieldContainer.dataset.index = index;
+          
+          const labelElement = document.createElement('label');
+          labelElement.className = 'result-label';
+          labelElement.textContent = label;
+          
+          const valueElement = document.createElement('div');
+          valueElement.className = 'result-value';
+          valueElement.textContent = (label === 'Amount') ? formatAmount(line) : line;
+          
+          fieldContainer.appendChild(labelElement);
+          fieldContainer.appendChild(valueElement);
+          
+          fieldContainer.addEventListener('click', function() {
+            const rawValue = this.dataset.rawValue;
+            navigator.clipboard.writeText(rawValue).then(() => {
+              this.classList.add('copied');
+              setTimeout(() => {
+                this.classList.remove('copied');
+              }, 1500);
+            });
+          });
+          
+          resultFields.appendChild(fieldContainer);
+        }
+      }
+      
+      // Store visible data for "Copy All" button
+      resultFields.dataset.visibleData = visibleDataLines.join('\n');
+    }
+
+    function startScanning() {
+      if (isScanning) return;
+      
+      isScanning = true;
+      showScanningPage();
+      
+      codeReader.decodeFromInputVideoDeviceContinuously(selectedDeviceId, 'video', (result, err) => {
+        if (result) {
+          codeReader.reset();
+          isScanning = false;
+          showResultsPage(result.text);
+        }
+        if (err) {
+          if (err instanceof ZXing.NotFoundException) {
+            console.log('No PDF417 code found.');
+          }
+          if (err instanceof ZXing.ChecksumException) {
+            console.log('A code was found, but it\'s read value was not valid.');
+          }
+          if (err instanceof ZXing.FormatException) {
+            console.log('A code was found, but it was in a invalid format.');
+          }
+        }
+      });
+    }
+
+    window.addEventListener('load', function () {
+      codeReader = new ZXing.BrowserPDF417Reader();
+      codeReader.getVideoInputDevices()
+        .then((videoInputDevices) => {
+          selectedDeviceId = videoInputDevices[0].deviceId;
+
+          startScanning();
+          document.getElementById('scanAgainButton').addEventListener('click', () => {
+            startScanning();
+          });
+
+          document.getElementById('copyAllButton').addEventListener('click', () => {
+            const visibleData = document.getElementById('result-fields').dataset.visibleData;
+            if (visibleData) {
+              navigator.clipboard.writeText(visibleData).then(() => {
+                const button = document.getElementById('copyAllButton');
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                  button.textContent = originalText;
+                  button.classList.remove('copied');
+                }, 1500);
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    });
+  </script>
+</body>
+</html>
+
