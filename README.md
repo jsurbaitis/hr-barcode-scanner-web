@@ -10,4 +10,4 @@ Barcodes are decoded using [@zxing/library](https://github.com/zxing-js/library)
 
 Example scan of a barcode from the [HUB-3 specification](https://hub.hr/sites/default/files/inline-files/2DBK_EUR_Uputa_0.pdf):
 
-![Example barcode scan](example.jpeg)
+<img src="example.jpeg" alt="Example barcode scan" style="max-width:300px;width:100%;height:auto;">
