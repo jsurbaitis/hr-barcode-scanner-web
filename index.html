@@ -34,6 +34,8 @@
     </footer>
   </main>
   
+  <div popover id="copied-popover">Copied to clipboard</div>
+  
   <script type="text/javascript" src="https://unpkg.com/@zxing/library@0.21.3"></script>
   <script type="text/javascript">
     let codeReader;
@@ -48,10 +50,10 @@
     function labelForLine(index) {
       switch (index) {
         case 2: return 'Amount';
-        case 6: return 'Name';
-        case 7: return 'Address';
-        case 8: return 'Address';
-        case 9: return 'IBAN';
+        case 6: return 'Recipient';
+        case 7: return 'Recipient\'s Address (Street and number)';
+        case 8: return 'Recipient\'s Address (City and postal code)';
+        case 9: return 'Recipient\'s IBAN';
         case 11: return 'Reference';
         default: return null;
       }
@@ -69,12 +71,22 @@
       }
       
       const euros = cents / 100.0;
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(euros);
+      return {
+        display: euros.toLocaleString('hr-HR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        copy: euros.toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      }
+    }
+
+    let copyPopoverTimeout;
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        clearTimeout(copyPopoverTimeout);
+        const popover = document.getElementById('copied-popover');
+        popover.showPopover();
+        copyPopoverTimeout = setTimeout(() => {
+          popover.hidePopover();
+        }, 1500);
+      });
     }
 
     function showResultsPage(resultText) {
@@ -91,12 +103,14 @@
         const label = labelForLine(index);
         if (label) {
           const line = rawDataLines[index];
-          const displayValue = (label === 'Amount') ? formatAmount(line) : line;
-          visibleDataLines.push(displayValue);
+          const amountValue = label === 'Amount' ? formatAmount(line) : null;
+          const displayValue = amountValue ? amountValue.display : line;
+          const copyValue = amountValue ? amountValue.copy : line;
+          visibleDataLines.push(copyValue);
           
           const fieldContainer = document.createElement('div');
           fieldContainer.className = 'result-field';
-          fieldContainer.dataset.copyValue = displayValue;
+          fieldContainer.dataset.copyValue = copyValue;
           
           const labelElement = document.createElement('label');
           labelElement.className = 'result-label';
@@ -110,13 +124,7 @@
           fieldContainer.appendChild(valueElement);
           
           fieldContainer.addEventListener('click', function() {
-            const rawValue = this.dataset.copyValue;
-            navigator.clipboard.writeText(rawValue).then(() => {
-              this.classList.add('copied');
-              setTimeout(() => {
-                this.classList.remove('copied');
-              }, 1500);
-            });
+            copyToClipboard(this.dataset.copyValue);
           });
           
           resultFields.appendChild(fieldContainer);
@@ -167,16 +175,7 @@
           document.getElementById('copyAllButton').addEventListener('click', () => {
             const visibleData = document.getElementById('result-fields').dataset.visibleData;
             if (visibleData) {
-              navigator.clipboard.writeText(visibleData).then(() => {
-                const button = document.getElementById('copyAllButton');
-                const originalText = button.textContent;
-                button.textContent = 'Copied!';
-                button.classList.add('copied');
-                setTimeout(() => {
-                  button.textContent = originalText;
-                  button.classList.remove('copied');
-                }, 1500);
-              });
+              copyToClipboard(visibleData);
             }
           });
         })

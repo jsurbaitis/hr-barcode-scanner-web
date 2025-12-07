@@ -2,7 +2,7 @@
 
 Live version: https://jsurbaitis.github.io/hr-barcode-scanner-web/.
 
-Scans and interprets Croatian invoice barcodes (PDF417 barcodes with HUB-3 data format).
+Scans and interprets Croatian invoice barcodes (PDF417 barcodes with HUB-3 data format). Works best with a good smartphone camera.
 
 Barcodes are decoded using [@zxing/library](https://github.com/zxing-js/library). Accuracy is not guaranteed and results may vary depending on input quality.
 
