@@ -1,4 +1,4 @@
-# hr-receipt-scanner-web
+# Croatian Invoice Barcode Scanner
 
 Live version: https://jsurbaitis.github.io/hr-barcode-scanner-web/.
 
