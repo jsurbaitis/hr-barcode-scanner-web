@@ -85,6 +85,25 @@
       });
     }
 
+    function fixEncoding(text) {
+      const map = {
+        'ÄŒ': 'Č',
+        'Ä': 'č',
+        'Ä†': 'Ć',
+        'Ä‡': 'ć',
+        'Ä': 'Đ',
+        'Ä‘': 'đ',
+        'Å ': 'Š',
+        'Å¡': 'š',
+        'Å½': 'Ž',
+        'Å¾': 'ž',
+      }
+
+      const keys = Object.keys(map);
+      const regex = new RegExp(keys.join('|'), 'g');
+      return text.replace(regex, match => map[match]).toUpperCase();
+    }
+
     function showResultsPage(resultText) {
       document.getElementById('scanning-page').style.display = 'none';
       document.getElementById('results-page').style.display = 'block';
@@ -141,18 +160,7 @@
         if (result) {
           codeReader.reset();
           isScanning = false;
-          showResultsPage(result.text);
-        }
-        if (err) {
-          if (err instanceof ZXing.NotFoundException) {
-            console.log('No PDF417 code found.');
-          }
-          if (err instanceof ZXing.ChecksumException) {
-            console.log('A code was found, but it\'s read value was not valid.');
-          }
-          if (err instanceof ZXing.FormatException) {
-            console.log('A code was found, but it was in a invalid format.');
-          }
+          showResultsPage(fixEncoding(result.text));
         }
       });
     }
